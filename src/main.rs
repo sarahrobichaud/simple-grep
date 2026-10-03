@@ -12,8 +12,8 @@ struct Configuration<'a> {
 
 impl<'a> Configuration<'a> {
     fn build(args: &'a [String]) -> Result<Configuration<'a>, &'static str> {
-        let Some(query) = args.get(1) else {
-            return Err("No query provided. Usage: io_project <QUERY> <FILE_PATH>");
+        let Some(needle) = args.get(1) else {
+            return Err("No query provided. Usage: io_project <NEEDLE> <FILE_PATH>");
         };
 
         let Some(file_path) = args.get(2) else {
@@ -24,7 +24,7 @@ impl<'a> Configuration<'a> {
         let is_verbose = helper::env_bool("IO_PROJECT_IS_VERBOSE", false);
 
         Ok(Configuration {
-            needle: query,
+            needle,
             file_path,
             is_verbose,
             options: SearchOptions::build(ignore_case),

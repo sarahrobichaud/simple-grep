@@ -1,10 +1,12 @@
-use io_project::{Haystack, SearchOptions, search};
+use io_project::{Haystack, SearchOptions, print_search_result, search};
 use std::{env, error, process};
 
+mod helper;
 
 struct Configuration<'a> {
     needle: &'a String,
     file_path: &'a String,
+    is_verbose: bool,
     options: SearchOptions
 }
 
@@ -21,14 +23,13 @@ impl<'a> Configuration<'a> {
 
         let query = args.get(1).expect("This should always be set if file_path is readable!");
 
-        let ignore_case = env::var("IO_PROJECT_IGNORE_CASE")
-            .is_ok();
-
-        dbg!(ignore_case);
+        let ignore_case = helper::env_bool("IO_PROJECT_IGNORE_CASE", false);
+        let is_verbose = helper::env_bool("IO_PROJECT_IS_VERBOSE", false);
 
         Ok(Configuration {
             needle: query,
             file_path,
+            is_verbose,
             options: SearchOptions::build(ignore_case)
         })
     }
@@ -40,45 +41,38 @@ impl<'a> Configuration<'a> {
 }
 
 
+fn run(config: Configuration) -> Result<(), Box<dyn error::Error>>{
+
+    if config.is_verbose {
+        config.print();
+        helper::print_divider()
+    };
+
+    let haystack = Haystack::build_from_file(&config.file_path)?;
+
+    if config.is_verbose {
+        haystack.print();
+        helper::print_divider()
+    };
+
+    let results = search(&config.needle, &haystack, &config.options);
+
+    print_search_result(&config.needle, &results, config.is_verbose);
+
+    Ok(())
+}
+
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
     let config = Configuration::build(&args).unwrap_or_else(|err| {
-        println!("Problem parsing arguments: {err}");
+        eprintln!("Problem parsing arguments: {err}");
         process::exit(1);
     });
 
     if let Err(e) = run(config) {
-        println!("Application error: {e}");
+        eprintln!("Application error: {e}");
         process::exit(1)
     };
-}
-
-fn run(config: Configuration) -> Result<(), Box<dyn error::Error>>{
-    config.print();
-
-    print_divider();
-
-    let haystack = Haystack::build_from_file(&config.file_path)?;
-
-    haystack.print();
-
-    print_divider();
-
-    let results = search(&config.needle, &haystack, &config.options);
-
-    if results.len() <= 0 {
-        println!("No results for {}", config.needle);
-    }else {
-        for match_result in results {
-            match_result.print()
-        }
-    }
-
-    Ok(())
-}
-
-fn print_divider() {
-    println!("-----------------------");
 }

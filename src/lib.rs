@@ -35,14 +35,40 @@ pub struct MatchResult<'a> {
     result_number: usize
 }
 
+enum ResultOutputType {
+    Simple,
+    Verbose
+}
+
 impl<'a> MatchResult<'a>{
-    pub fn print(&self){
-        let result_prefix = format!("Result #{}", self.result_number);
-        let message = format!("@L{} | {}", self.line_number, self.value);
-        println!("{} - {}", result_prefix, message);
+    fn print(&self, output_type: &ResultOutputType){
+        match output_type {
+            ResultOutputType::Simple => println!("{}", self.value),
+            ResultOutputType::Verbose => {
+                let result_prefix = format!("Result #{}", self.result_number);
+                let message = format!("@L{} | {}", self.line_number, self.value);
+                println!("{} - {}", result_prefix, message);
+            }
+        }
     }
 }
 
+pub fn print_search_result(needle: &str, results: &Vec<MatchResult>, is_verbose: bool) {
+    if results.is_empty() {
+        println!("No results for {needle}");
+        return;
+    }
+
+    let output_type = if is_verbose {
+        ResultOutputType::Verbose
+    } else {
+        ResultOutputType::Simple
+    };
+
+    for match_result in results {
+        match_result.print(&output_type);
+    }
+}
 
 pub fn search<'a>(needle: &str, haystack: &'a Haystack, options: &SearchOptions) -> Vec<MatchResult<'a>> {
 

@@ -1,7 +1,7 @@
 use std::env;
 
 const THRUTHY_VALUES: [&str; 4] = ["1", "true", "yes", "on"];
-const FALSY_VALUES: [&str; 5] = ["0", "false" , "no" , "off", ""];
+const FALSY_VALUES: [&str; 5] = ["0", "false", "no", "off", ""];
 
 pub fn print_divider() {
     println!("-----------------------");
@@ -16,10 +16,8 @@ pub fn env_bool(name: &str, default: bool) -> bool {
                 eprintln!("warning: {name}={value:?} is not a valid bool, using {default}");
                 default
             }
-        }
-        Err(_) => {
-            default
-        }
+        },
+        Err(_) => default,
     }
 }
 
@@ -41,9 +39,10 @@ mod tests {
         let _guard = lock_env();
 
         for value in THRUTHY_VALUES {
-
             #[allow(unused_unsafe)]
-            unsafe { env::set_var("IO_PROJECT_TEST_BOOL", value) };
+            unsafe {
+                env::set_var("IO_PROJECT_TEST_BOOL", value)
+            };
 
             assert!(env_bool("IO_PROJECT_TEST_BOOL", false));
         }
@@ -55,9 +54,10 @@ mod tests {
         let _guard = lock_env();
 
         for value in FALSY_VALUES {
-
             #[allow(unused_unsafe)]
-            unsafe { env::set_var("IO_PROJECT_TEST_BOOL", value) };
+            unsafe {
+                env::set_var("IO_PROJECT_TEST_BOOL", value)
+            };
 
             assert!(!env_bool("IO_PROJECT_TEST_BOOL", false));
         }
@@ -66,11 +66,12 @@ mod tests {
 
     #[test]
     fn env_invalid_value_uses_default() {
-
         let _guard = lock_env();
 
         #[allow(unused_unsafe)]
-        unsafe { env::set_var("IO_PROJECT_TEST_BOOL", "invalid_value") };
+        unsafe {
+            env::set_var("IO_PROJECT_TEST_BOOL", "invalid_value")
+        };
 
         assert!(!env_bool("IO_PROJECT_TEST_BOOL", false));
         assert!(env_bool("IO_PROJECT_TEST_BOOL", true));

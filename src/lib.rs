@@ -2,7 +2,7 @@ use std::fs;
 use std::io;
 
 pub struct SearchOptions {
-    ignore_case: bool
+    ignore_case: bool,
 }
 
 impl SearchOptions {
@@ -12,19 +12,17 @@ impl SearchOptions {
 }
 
 pub struct Haystack {
-    content: String
+    content: String,
 }
 
 impl Haystack {
     pub fn build_from_file(file_path: &str) -> Result<Haystack, io::Error> {
-        let content =  fs::read_to_string(file_path)?;
+        let content = fs::read_to_string(file_path)?;
 
-        Ok(Haystack {
-            content
-        })
+        Ok(Haystack { content })
     }
 
-    pub fn print(&self){
+    pub fn print(&self) {
         println!("Within text:\n{}", self.content)
     }
 }
@@ -32,16 +30,16 @@ impl Haystack {
 pub struct MatchResult<'a> {
     value: &'a str,
     line_number: usize,
-    result_number: usize
+    result_number: usize,
 }
 
 enum ResultOutputType {
     Simple,
-    Verbose
+    Verbose,
 }
 
-impl<'a> MatchResult<'a>{
-    fn print(&self, output_type: &ResultOutputType){
+impl<'a> MatchResult<'a> {
+    fn print(&self, output_type: &ResultOutputType) {
         match output_type {
             ResultOutputType::Simple => println!("{}", self.value),
             ResultOutputType::Verbose => {
@@ -70,14 +68,16 @@ pub fn print_search_result(needle: &str, results: &[MatchResult], is_verbose: bo
     }
 }
 
-pub fn search<'a>(needle: &str, haystack: &'a Haystack, options: &SearchOptions) -> Vec<MatchResult<'a>> {
-
-    let mut matches : Vec<MatchResult<'a>> = vec![];
+pub fn search<'a>(
+    needle: &str,
+    haystack: &'a Haystack,
+    options: &SearchOptions,
+) -> Vec<MatchResult<'a>> {
+    let mut matches: Vec<MatchResult<'a>> = vec![];
 
     let normalized_needle = needle.to_lowercase();
 
     for (i, line) in haystack.content.lines().enumerate() {
-
         let is_valid_match = if options.ignore_case {
             line.to_lowercase().contains(&normalized_needle)
         } else {
@@ -88,14 +88,13 @@ pub fn search<'a>(needle: &str, haystack: &'a Haystack, options: &SearchOptions)
             matches.push(MatchResult {
                 value: line,
                 line_number: i + 1,
-                result_number: matches.len() + 1
+                result_number: matches.len() + 1,
             });
         }
     }
 
     matches
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -108,7 +107,9 @@ Pick three.
 Trust me.";
 
     fn build_hs(content: &str) -> Haystack {
-        Haystack { content: content.to_string() }
+        Haystack {
+            content: content.to_string(),
+        }
     }
 
     fn default_search_options() -> SearchOptions {

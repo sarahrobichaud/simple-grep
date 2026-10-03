@@ -7,12 +7,11 @@ struct Configuration<'a> {
     needle: &'a str,
     file_path: &'a str,
     is_verbose: bool,
-    options: SearchOptions
+    options: SearchOptions,
 }
 
 impl<'a> Configuration<'a> {
     fn build(args: &'a [String]) -> Result<Configuration<'a>, &'static str> {
-
         let Some(query) = args.get(1) else {
             return Err("No query provided. Usage: io_project <QUERY> <FILE_PATH>");
         };
@@ -28,7 +27,7 @@ impl<'a> Configuration<'a> {
             needle: query,
             file_path,
             is_verbose,
-            options: SearchOptions::build(ignore_case)
+            options: SearchOptions::build(ignore_case),
         })
     }
 
@@ -38,28 +37,25 @@ impl<'a> Configuration<'a> {
     }
 }
 
-
-fn run(config: Configuration) -> Result<(), Box<dyn error::Error>>{
-
+fn run(config: Configuration) -> Result<(), Box<dyn error::Error>> {
     if config.is_verbose {
         config.print();
         helper::print_divider()
     };
 
-    let haystack = Haystack::build_from_file(&config.file_path)?;
+    let haystack = Haystack::build_from_file(config.file_path)?;
 
     if config.is_verbose {
         haystack.print();
         helper::print_divider()
     };
 
-    let results = search(&config.needle, &haystack, &config.options);
+    let results = search(config.needle, &haystack, &config.options);
 
-    print_search_result(&config.needle, &results, config.is_verbose);
+    print_search_result(config.needle, &results, config.is_verbose);
 
     Ok(())
 }
-
 
 fn main() {
     let args: Vec<String> = env::args().collect();

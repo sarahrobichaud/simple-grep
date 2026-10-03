@@ -1,0 +1,17 @@
+Searching for to
+In file: data/poem.txt
+-----------------------
+Within text:
+I'm nobody! Who are you?
+Are you nobody, too?
+Then there's a pair of us - don't tell!
+They'd banish us, you know.
+
+How dreary to be somebody!
+How public, like a frog
+To tell your name the livelong day
+To an admiring bog!
+
+-----------------------
+Result #1 - @L2 | Are you nobody, too?
+Result #2 - @L6 | How dreary to be somebody!

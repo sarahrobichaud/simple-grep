@@ -3,5 +3,5 @@
 version = 4
 
 [[package]]
-name = "io-project"
+name = "io_project"
 version = "0.1.0"

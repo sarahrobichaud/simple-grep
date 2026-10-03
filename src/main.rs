@@ -1,7 +1,8 @@
-use std::{env, error, fs, io, process};
+use io_project::{Haystack, search};
+use std::{env, error, process};
 
 struct Configuration<'a> {
-    query: &'a String,
+    needle: &'a String,
     file_path: &'a String
 }
 
@@ -19,26 +20,18 @@ impl<'a> Configuration<'a> {
         let query = args.get(1).expect("This should always be set if file_path is readable!");
 
         Ok(Configuration {
-            query,
+            needle: query,
             file_path
         })
     }
 
     fn print(&self) {
-        println!("Searching for {}", self.query);
+        println!("Searching for {}", self.needle);
         println!("In file: {}", self.file_path);
     }
 }
 
-struct Haystack {
-    content: String,
-}
 
-impl Haystack {
-    fn print(&self){
-        println!("Within text:\n{}", self.content)
-    }
-}
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -57,16 +50,27 @@ fn main() {
 fn run(config: Configuration) -> Result<(), Box<dyn error::Error>>{
     config.print();
 
-    println!("-----------------");
+    print_divider();
 
-    let haystack = get_haystack(config.file_path)?;
+    let haystack = Haystack::build_from_file(&config.file_path)?;
+
     haystack.print();
+
+    print_divider();
+
+    let results = search(&config.needle, &haystack);
+
+    if results.len() <= 0 {
+        println!("No results for {}", config.needle);
+    }else {
+        for match_result in search(&config.needle, &haystack) {
+            match_result.print()
+        }
+    }
 
     Ok(())
 }
 
-
-fn get_haystack(file_path: &String) -> Result<Haystack, io::Error> {
-    let content = fs::read_to_string(file_path)?;
-    Ok(Haystack { content })
+fn print_divider() {
+    println!("-----------------------");
 }

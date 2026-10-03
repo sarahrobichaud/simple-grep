@@ -4,8 +4,8 @@ use std::{env, error, process};
 mod helper;
 
 struct Configuration<'a> {
-    needle: &'a String,
-    file_path: &'a String,
+    needle: &'a str,
+    file_path: &'a str,
     is_verbose: bool,
     options: SearchOptions
 }
@@ -13,15 +13,13 @@ struct Configuration<'a> {
 impl<'a> Configuration<'a> {
     fn build(args: &'a [String]) -> Result<Configuration<'a>, &'static str> {
 
-        if args.len() < 2 {
-            return Err("No arguments provided.");
-        }
+        let Some(query) = args.get(1) else {
+            return Err("No query provided. Usage: io_project <QUERY> <FILE_PATH>");
+        };
 
         let Some(file_path) = args.get(2) else {
             return Err("No file path provided.");
         };
-
-        let query = args.get(1).expect("This should always be set if file_path is readable!");
 
         let ignore_case = helper::env_bool("IO_PROJECT_IGNORE_CASE", false);
         let is_verbose = helper::env_bool("IO_PROJECT_IS_VERBOSE", false);

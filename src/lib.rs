@@ -53,7 +53,7 @@ impl<'a> MatchResult<'a>{
     }
 }
 
-pub fn print_search_result(needle: &str, results: &Vec<MatchResult>, is_verbose: bool) {
+pub fn print_search_result(needle: &str, results: &[MatchResult], is_verbose: bool) {
     if results.is_empty() {
         println!("No results for {needle}");
         return;
@@ -74,11 +74,14 @@ pub fn search<'a>(needle: &str, haystack: &'a Haystack, options: &SearchOptions)
 
     let mut matches : Vec<MatchResult<'a>> = vec![];
 
+    let normalized_needle = needle.to_lowercase();
+
     for (i, line) in haystack.content.lines().enumerate() {
 
-        let is_valid_match = match options.ignore_case{
-            true => line.to_lowercase().contains(&needle.to_lowercase()),
-            false => line.contains(needle),
+        let is_valid_match = if options.ignore_case {
+            line.to_lowercase().contains(&normalized_needle)
+        } else {
+            line.contains(needle)
         };
 
         if is_valid_match {

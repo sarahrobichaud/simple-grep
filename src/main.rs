@@ -1,9 +1,11 @@
-use io_project::{Haystack, search};
+use io_project::{Haystack, SearchOptions, search};
 use std::{env, error, process};
+
 
 struct Configuration<'a> {
     needle: &'a String,
-    file_path: &'a String
+    file_path: &'a String,
+    options: SearchOptions
 }
 
 impl<'a> Configuration<'a> {
@@ -19,9 +21,15 @@ impl<'a> Configuration<'a> {
 
         let query = args.get(1).expect("This should always be set if file_path is readable!");
 
+        let ignore_case = env::var("IO_PROJECT_IGNORE_CASE")
+            .is_ok();
+
+        dbg!(ignore_case);
+
         Ok(Configuration {
             needle: query,
-            file_path
+            file_path,
+            options: SearchOptions::build(ignore_case)
         })
     }
 
@@ -58,12 +66,12 @@ fn run(config: Configuration) -> Result<(), Box<dyn error::Error>>{
 
     print_divider();
 
-    let results = search(&config.needle, &haystack);
+    let results = search(&config.needle, &haystack, &config.options);
 
     if results.len() <= 0 {
         println!("No results for {}", config.needle);
     }else {
-        for match_result in search(&config.needle, &haystack) {
+        for match_result in results {
             match_result.print()
         }
     }

@@ -1,17 +1,13 @@
 use std::fs;
 use std::io;
 
-pub struct MatchResult<'a> {
-    value: &'a str,
-    line_number: usize,
-    result_number: usize
+pub struct SearchOptions {
+    ignore_case: bool
 }
 
-impl<'a> MatchResult<'a>{
-    pub fn print(&self){
-        let result_prefix = format!("Result #{}", self.result_number);
-        let message = format!("@L{} | {}", self.line_number, self.value);
-        println!("{} - {}", result_prefix, message);
+impl SearchOptions {
+    pub fn build(ignore_case: bool) -> Self {
+        Self { ignore_case }
     }
 }
 
@@ -33,20 +29,38 @@ impl Haystack {
     }
 }
 
-pub fn search<'a>(needle: &str, haystack: &'a Haystack) -> Vec<MatchResult<'a>> {
+pub struct MatchResult<'a> {
+    value: &'a str,
+    line_number: usize,
+    result_number: usize
+}
+
+impl<'a> MatchResult<'a>{
+    pub fn print(&self){
+        let result_prefix = format!("Result #{}", self.result_number);
+        let message = format!("@L{} | {}", self.line_number, self.value);
+        println!("{} - {}", result_prefix, message);
+    }
+}
+
+
+pub fn search<'a>(needle: &str, haystack: &'a Haystack, options: &SearchOptions) -> Vec<MatchResult<'a>> {
 
     let mut matches : Vec<MatchResult<'a>> = vec![];
 
     for (i, line) in haystack.content.lines().enumerate() {
-        if line.contains(needle) {
 
-            let match_result = MatchResult {
+        let is_valid_match = match options.ignore_case{
+            true => line.to_lowercase().contains(&needle.to_lowercase()),
+            false => line.contains(needle),
+        };
+
+        if is_valid_match {
+            matches.push(MatchResult {
                 value: line,
                 line_number: i + 1,
                 result_number: matches.len() + 1
-            };
-
-            matches.push(match_result);
+            });
         }
     }
 
@@ -58,6 +72,20 @@ pub fn search<'a>(needle: &str, haystack: &'a Haystack) -> Vec<MatchResult<'a>> 
 mod tests {
     use super::*;
 
+    const CASING_TEST_CONTENT: &str = "\
+Rust:
+safe, fast, productive.
+Pick three.
+Trust me.";
+
+    fn build_hs(content: &str) -> Haystack {
+        Haystack { content: content.to_string() }
+    }
+
+    fn default_search_options() -> SearchOptions {
+        SearchOptions { ignore_case: false }
+    }
+
     #[test]
     fn one_result() {
         let needle = "duct";
@@ -65,13 +93,30 @@ mod tests {
 Rust:
 safe, fast, productive.
 Pick three.";
-
-        let haystack = Haystack {
-            content: content.to_string()
-        };
-        let result = search(needle, &haystack);
+        let haystack = build_hs(content);
+        let result = search(needle, &haystack, &default_search_options());
 
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].value, "safe, fast, productive.");
+    }
+
+    #[test]
+    fn case_insensitive() {
+        let needle = "rUsT";
+        let haystack = build_hs(CASING_TEST_CONTENT);
+        let result = search(needle, &haystack, &SearchOptions { ignore_case: true });
+
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].value, "Rust:");
+        assert_eq!(result[1].value, "Trust me.");
+    }
+
+    #[test]
+    fn case_sensitive() {
+        let needle = "rUsT";
+        let haystack = build_hs(CASING_TEST_CONTENT);
+        let result = search(needle, &haystack, &SearchOptions { ignore_case: false });
+
+        assert_eq!(result.len(), 0);
     }
 }

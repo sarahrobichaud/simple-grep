@@ -41,12 +41,12 @@ enum ResultOutputType {
 impl<'a> MatchResult<'a> {
     fn print(&self, output_type: &ResultOutputType) {
         match output_type {
-            ResultOutputType::Simple => println!("{}", self.value),
             ResultOutputType::Verbose => {
                 let result_prefix = format!("Result #{}", self.result_number);
                 let message = format!("@L{} | {}", self.line_number, self.value);
                 println!("{} - {}", result_prefix, message);
             }
+            _ => print!("{}", self.value),
         }
     }
 }
